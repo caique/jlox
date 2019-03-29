@@ -1,14 +1,11 @@
 package jlox;
 
-import jlox.tokens.Token;
-import jlox.tokens.TokenType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static jlox.tokens.TokenType.*;
+import static jlox.TokenType.*;
 
 public class Scanner {
 

@@ -1,13 +1,10 @@
 package jlox;
 
-import jlox.tokens.Token;
-import jlox.tokens.TokenType;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.List;
 
