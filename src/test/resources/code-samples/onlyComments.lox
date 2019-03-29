@@ -1,0 +1,6 @@
+// this is a Java-like comment
+// to demonstrate
+// that
+// everything can be written
+// and nothing will be considered
+// even when the line is extremely long like this one here. Until the end of the line, everything won'' be considered.

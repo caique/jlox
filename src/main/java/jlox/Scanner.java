@@ -73,13 +73,15 @@ public class Scanner {
             case '+': addToken(PLUS); break;
             case ';': addToken(SEMICOLON); break;
             case '*': addToken(STAR); break;
-            case '!': addToken(nextMatches('=') ? BANG_EQUAL : BANG); break;
-            case '=': addToken(nextMatches('=') ? EQUAL_EQUAL : EQUAL); break;
-            case '<': addToken(nextMatches('=') ? LESS_EQUAL : LESS); break;
-            case '>': addToken(nextMatches('=') ? GREATER_EQUAL : GREATER); break;
+            case '!': addToken(match('=') ? BANG_EQUAL : BANG); break;
+            case '=': addToken(match('=') ? EQUAL_EQUAL : EQUAL); break;
+            case '<': addToken(match('=') ? LESS_EQUAL : LESS); break;
+            case '>': addToken(match('=') ? GREATER_EQUAL : GREATER); break;
             case '/':
-                if (nextMatches('/')) {
+                if (match('/')) {
                     while (peek() != '\n' && !isAtEnd()) advance();
+                } else if (match('*')) {
+                    multilineComment();
                 } else {
                     addToken(SLASH);
                 }
@@ -104,11 +106,18 @@ public class Scanner {
         }
     }
 
-    private Boolean isAlpha(Character character) {
-        return (character >= 'a' && character <= 'z')
-                || (character >= 'A' && character <= 'Z')
-                || character == '_';
+    private void addToken(TokenType type) {
+        addToken(type, null);
     }
+
+    private void addToken(TokenType type, Object literal) {
+        String text = this.source.substring(start, current);
+        this.tokens.add(new Token(type, text, literal, line));
+    }
+
+    /*
+    * FEATURES
+     */
 
     private void identifier() {
         while(isAlphanumeric(peek())) advance();
@@ -120,10 +129,6 @@ public class Scanner {
         addToken(type);
     }
 
-    private Boolean isAlphanumeric(Character character) {
-        return isAlpha(character) || isDigit(character);
-    }
-
     private void number() {
         while (isDigit(peek())) advance();
 
@@ -133,15 +138,6 @@ public class Scanner {
         }
 
         addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
-    }
-
-    private Character peekNext() {
-        if (current + 1 >= source.length()) return '\0';
-        return source.charAt(current + 1);
-    }
-
-    private Boolean isDigit(Character character) {
-        return character >= '0' && character <= '9';
     }
 
     private void string() {
@@ -161,21 +157,44 @@ public class Scanner {
         addToken(STRING, value);
     }
 
+    private void multilineComment() {
+        while (peek() != '*') advance();
+        while (peek() != '/') advance();
+        advance();
+    }
+
+    /*
+    * HELPER METHODS
+     */
+    private Boolean isAlpha(Character character) {
+        return (character >= 'a' && character <= 'z')
+                || (character >= 'A' && character <= 'Z')
+                || character == '_';
+    }
+
+    private Boolean isAlphanumeric(Character character) {
+        return isAlpha(character) || isDigit(character);
+    }
+
+    private Boolean isDigit(Character character) {
+        return character >= '0' && character <= '9';
+    }
+
+    private Boolean isAtEnd() {
+        return this.current >= this.source.length();
+    }
+
+    /*
+    * NAVIGATION METHODS
+     */
     private Character peek() {
         if (isAtEnd()) return '\0';
         return source.charAt(current);
     }
 
-    private Boolean nextMatches(Character expected) {
-        if (isAtEnd()) return Boolean.FALSE;
-        if (source.charAt(current) != expected) return Boolean.FALSE;
-
-        current++;
-        return Boolean.TRUE;
-    }
-
-    private Boolean isAtEnd() {
-        return this.current >= this.source.length();
+    private Character peekNext() {
+        if (current + 1 >= source.length()) return '\0';
+        return source.charAt(current + 1);
     }
 
     private Character advance() {
@@ -183,13 +202,12 @@ public class Scanner {
         return source.charAt(current - 1);
     }
 
-    private void addToken(TokenType type) {
-        addToken(type, null);
-    }
+    private Boolean match(Character expected) {
+        if (isAtEnd()) return Boolean.FALSE;
+        if (source.charAt(current) != expected) return Boolean.FALSE;
 
-    private void addToken(TokenType type, Object literal) {
-        String text = this.source.substring(start, current);
-        this.tokens.add(new Token(type, text, literal, line));
+        current++;
+        return Boolean.TRUE;
     }
 
 }
