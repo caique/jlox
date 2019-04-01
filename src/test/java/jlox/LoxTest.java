@@ -12,11 +12,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class LoxTest {
 
     @Test
-    public void mainRun() throws IOException {
-        String[] args = {"script1.lox", "script2.lox"};
-
-        Lox.main(args);
-
+    public void emptyTest() {
         assertThat(true).isTrue();
     }
 
