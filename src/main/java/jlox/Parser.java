@@ -72,51 +72,19 @@ public class Parser {
     }
 
     private Expr equality() {
-        Expr expr = comparison();
-
-        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            Token operator = previous();
-            Expr right = comparison();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return leftAssociativeBinaryOperation(() -> comparison(), BANG_EQUAL, EQUAL_EQUAL);
     }
 
     private Expr comparison() {
-        Expr expr = addition();
-
-        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-            Token operator = previous();
-            Expr right = addition();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return leftAssociativeBinaryOperation(() -> addition(), GREATER, GREATER_EQUAL, LESS, LESS_EQUAL);
     }
 
     private Expr addition() {
-        Expr expr = multiplication();
-
-        while (match(MINUS, PLUS)) {
-            Token operator = previous();
-            Expr right = multiplication();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return leftAssociativeBinaryOperation(() -> multiplication(), MINUS, PLUS);
     }
 
     private Expr multiplication() {
-        Expr expr = unary();
-
-        while (match(SLASH, STAR)) {
-            Token operator = previous();
-            Expr right = unary();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return leftAssociativeBinaryOperation(() -> unary(), SLASH, STAR);
     }
 
     private Expr unary() {
@@ -151,6 +119,18 @@ public class Parser {
         if (check(type)) return advance();
 
         throw error(peek(), message);
+    }
+
+    private Expr leftAssociativeBinaryOperation(Supplier<Expr> operand, TokenType...stopTokens) {
+        Expr expr = operand.get();
+
+        while(match(stopTokens)) {
+            Token operator = previous();
+            Expr right = operand.get();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
     }
 
     /*
